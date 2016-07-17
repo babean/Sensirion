@@ -1,3 +1,6 @@
+// This #include statement was automatically added by the Particle IDE.
+#include "Sensirion.h"
+
 /*
  * Example code for SHT1x or SHT7x sensors demonstrating blocking calls
  * for temperature and humidity measurement in the setup routine and
@@ -12,20 +15,20 @@
  * connection issues with the sensor.  A #define selects between versions.
  */
 
-#include <Sensirion.h>
+//#define ENA_ERRCHK  // Enable error checking code
 
-#define ENA_ERRCHK  // Enable error checking code
-
-const byte dataPin =  2;                 // SHTxx serial data
-const byte sclkPin =  3;                 // SHTxx serial clock
-const byte ledPin  = 13;                 // Arduino built-in LED
+const byte dataPin =  D0;                 // SHTxx serial data
+const byte sclkPin =  D1;                 // SHTxx serial clock
+const byte ledPin  =  D7;                 // Arduino built-in LED
 const unsigned long TRHSTEP   = 5000UL;  // Sensor query period
 const unsigned long BLINKSTEP =  250UL;  // LED blink period
 
-Sensirion sht = Sensirion(dataPin, sclkPin);
+Sensirion sht(dataPin, sclkPin);
 
-unsigned int rawData;
+uint16_t rawData;
 float temperature;
+float temperatureF;
+
 float humidity;
 float dewpoint;
 
@@ -58,10 +61,12 @@ void setup() {
   Serial.print("Status reg = 0x");
   Serial.println(stat, HEX);
 // Demonstrate blocking calls
-  if (error = sht.measTemp(&rawData))    // sht.meas(TEMP, &rawData, BLOCK)
+  if (error = sht.meas(TEMP, &rawData, BLOCK))    // sht.meas(TEMP, &rawData, BLOCK)
     logError(error);
   temperature = sht.calcTemp(rawData);
-  if (error = sht.measHumi(&rawData))    // sht.meas(HUMI, &rawData, BLOCK)
+  temperatureF = sht.calcTempF(rawData);
+
+  if (error = sht.meas(HUMI, &rawData, BLOCK))    // sht.meas(HUMI, &rawData, BLOCK)
     logError(error);
   humidity = sht.calcHumi(rawData, temperature);
   dewpoint = sht.calcDewpoint(humidity, temperature);
@@ -92,6 +97,7 @@ void loop() {
     if (measType == TEMP) {                    // Process temp or humi?
       measType = HUMI;
       temperature = sht.calcTemp(rawData);     // Convert raw sensor data
+      temperatureF = sht.calcTempF(rawData);
       if (error = sht.meas(HUMI, &rawData, NONBLOCK)) // Start humi measurement
         logError(error);
     } else {
@@ -116,14 +122,15 @@ void setup() {
   sht.readSR(&stat);                     // Read sensor status register
   Serial.print("Status reg = 0x");
   Serial.println(stat, HEX);
-  sht.writeSR(LOW_RES);                  // Set sensor to low resolution
+  //sht.writeSR(LOW_RES);                  // Set sensor to low resolution
   sht.readSR(&stat);                     // Read sensor status register again
   Serial.print("Status reg = 0x");
   Serial.println(stat, HEX);
 // Demonstrate blocking calls
-  sht.measTemp(&rawData);                // sht.meas(TEMP, &rawData, BLOCK)
+  sht.meas(TEMP, &rawData, BLOCK);                // sht.meas(TEMP, &rawData, BLOCK)
   temperature = sht.calcTemp(rawData);
-  sht.measHumi(&rawData);                // sht.meas(HUMI, &rawData, BLOCK)
+  temperatureF = sht.calcTempF(rawData);
+  sht.meas(HUMI, &rawData, BLOCK);                // sht.meas(HUMI, &rawData, BLOCK)
   humidity = sht.calcHumi(rawData, temperature);
   dewpoint = sht.calcDewpoint(humidity, temperature);
   logData();
@@ -150,6 +157,7 @@ void loop() {
     if (measType == TEMP) {                    // Process temp or humi?
       measType = HUMI;
       temperature = sht.calcTemp(rawData);     // Convert raw sensor data
+      temperatureF = sht.calcTempF(rawData);     // Convert raw sensor data
       sht.meas(HUMI, &rawData, NONBLOCK);      // Start humi measurement
     } else {
       measActive = false;
@@ -164,7 +172,10 @@ void loop() {
 
 void logData() {
   Serial.print("Temperature = ");   Serial.print(temperature);
-  Serial.print(" C, Humidity = ");  Serial.print(humidity);
+
+  Serial.print("C, TemperatureF = ");   Serial.print(temperatureF);
+
+  Serial.print(" F, Humidity = ");  Serial.print(humidity);
   Serial.print(" %, Dewpoint = ");  Serial.print(dewpoint);
   Serial.println(" C");
 }
@@ -186,3 +197,4 @@ void logError(byte error) {
     break;
   }
 }
+
