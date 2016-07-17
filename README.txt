@@ -27,6 +27,7 @@ Revision History
       improved error reporting.  Added sensor status register read function
       and expanded status register write function to cover all setable bits.
 
+2.0.1 - Port to Particle.io devices and add a method to return TempF.
 
 Usage Information
 
