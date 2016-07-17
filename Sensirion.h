@@ -7,13 +7,21 @@
 /*  Revised (v1.1) by Carl Jackson, August 4, 2010                            */
 /*  Rewritten (v2.0) by Carl Jackson, December 10, 2010                       */
 /*    See README.txt file for details                                         */
+/*  Port to Particle (v2.0.1) by Michael Doan, July 17, 2016                  */
+/*    See README.txt file for details                                         */
 /* ========================================================================== */
 
 
 #ifndef Sensirion_h
 #define Sensirion_h
 
-#include <stdint.h>
+#if defined (PARTICLE)
+#include "application.h"
+#else
+#include "Arduino.h"
+#endif
+
+#include "math.h"
 
 // Enable CRC checking
 #define CRC_ENA
@@ -29,8 +37,8 @@
 #define PULSE_SHORT delayMicroseconds(1)
 
 // Useful macros
-#define measTemp(result)  meas(TEMP, result, BLOCK)
-#define measHumi(result)  meas(HUMI, result, BLOCK)
+//#define measTemp(result)  meas(TEMP, result, BLOCK)
+//#define measHumi(result)  meas(HUMI, result, BLOCK)
 
 // User constants
 const uint8_t TEMP     =     0;
@@ -79,6 +87,7 @@ class Sensirion
     uint8_t readSR(uint8_t *result);
     uint8_t reset(void);
     float calcTemp(uint16_t rawData);
+    float calcTempF(uint16_t rawData);
     float calcHumi(uint16_t rawData, float temp);
     float calcDewpoint(float humi, float temp);
 };
