@@ -4,6 +4,7 @@ temperature and humidity sensors.
 Created by Markus Schatzl, November 28, 2008
 Revised (v1.1) by Carl Jackson, August 4, 2010
 Rewritten (v2.0) by Carl Jackson, December 8, 2010
+Ported to Particle (v2.0.1) by Michael Doan, July 17, 2016
 
 Revision History
 
