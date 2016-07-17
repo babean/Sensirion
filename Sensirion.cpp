@@ -7,6 +7,8 @@
 /*  Revised (v1.1) by Carl Jackson, August 4, 2010                            */
 /*  Rewritten (v2.0) by Carl Jackson, December 10, 2010                       */
 /*    See README.txt file for details                                         */
+/*  Port to Particle (v2.0.1) by Michael Doan, July 17, 2016                  */
+/*    See README.txt file for details                                         */
 /* ========================================================================== */
 
 
@@ -16,13 +18,13 @@
 
 #include "Sensirion.h"
 
-// Wiring Core Includes
-#if ARDUINO >= 100
- #include "Arduino.h"
+#if defined (PARTICLE)
+#include "application.h"
 #else
- #include "WProgram.h"
+#include "Arduino.h"
 #endif
- 
+
+
 extern "C" {
   // AVR LibC Includes
   #include <stddef.h>
@@ -49,7 +51,7 @@ const bool noACK  = false;
 const bool ACK    = true;
 
 // Temperature & humidity equation constants
-  const float D1  = -40.1;          // for deg C @ 5V
+  const float D_1 = -40.1;          // for deg C @ 5V
   const float D2h =   0.01;         // for deg C, 14-bit precision
   const float D2l =   0.04;         // for deg C, 12-bit precision
 
@@ -98,10 +100,10 @@ Sensirion::Sensirion(uint8_t dataPin, uint8_t clockPin) {
 uint8_t Sensirion::measure(float *temp, float *humi, float *dew) {
   uint16_t rawData;
   uint8_t error;
-  if (error = measTemp(&rawData))
+  if (error = meas(TEMP, &rawData, BLOCK))
     return error;
   *temp = calcTemp(rawData);
-  if (error = measHumi(&rawData))
+  if (error = meas(HUMI, &rawData, BLOCK))
     return error;
   *humi = calcHumi(rawData, *temp);
   *dew = calcDewpoint(*humi, *temp);
@@ -345,9 +347,14 @@ void Sensirion::resetConnection(void) {
 // Calculates temperature in degrees C from raw sensor data
 float Sensirion::calcTemp(uint16_t rawData) {
   if (_stat_reg & LOW_RES)
-    return D1 + D2l * (float) rawData;
+    return D_1 + D2l * (float) rawData;
   else
-    return D1 + D2h * (float) rawData;
+    return D_1 + D2h * (float) rawData;
+}
+
+// Calculates temperature in degrees C from raw sensor data
+float Sensirion::calcTempF(uint16_t rawData) {
+  return calcTemp(rawData)*9/5+32;
 }
 
 // Calculates relative humidity from raw sensor data
